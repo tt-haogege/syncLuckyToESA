@@ -1,0 +1,21 @@
+{
+  "lucky_url": "https://lucky.tthaogege.cn/lucky/api/webservice/rules",
+  "lucky_cron_time": "0 */10 * * * *",
+  "lucky_open_token": "Im880x4tjDqbC7SZXJ1QUqLCYZWoqbpT",
+  "esa_access_key_id": "",
+  "esa_access_key_secret": "",
+  "esa_region_id": "cn-hangzhou",
+  "esa_domain": "nasqdz.top",
+  "esa_site_id": "1057815683123680",
+  "esa_target_value": "",
+  "esa_dns_analysis": true,
+  "esa_dns_provider": "ali",
+  "esa_host_policy": "follow_hostname",
+  "esa_target_value_function": "function getTargetValue (rule, getDomainRecordValue) {\n    const targetValue = getDomainRecordValue(rule.Domains[0])+'a.nasqdz.top';return targetValue;\n}",
+  "ali_dns_region_id": "cn-hangzhou",
+  "ali_dns_domain": "nasqdz.top",
+  "tencent_dns_secret_id": "",
+  "tencent_dns_secret_key": "",
+  "tencent_dns_region": "ap-beijing",
+  "tencent_dns_domain": "nasqdz.top"
+}
