@@ -32,15 +32,22 @@ async function createDNSAnalysis(params) {
     throw new Error(`不支持的服务商: ${provider}，仅支持 'ali' 或 'tencent'`);
   }
 
-  // 获取域名（如果未提供，默认使用esa_domain）
+  // 获取域名（如果未提供，根据服务商优先使用对应的DNS域名，否则使用esa_domain）
   let targetDomain = domain;
   if (!targetDomain) {
     const config = getConfig();
-    // 默认使用esa_domain，如果没有则回退到各自的配置
-    targetDomain = config.esa_domain;
+    
+    // 根据服务商选择域名：优先使用配置的DNS域名，如果没有则使用esa_domain
+    if (provider === 'ali') {
+      targetDomain = config.ali_dns_domain || config.esa_domain;
+    } else if (provider === 'tencent') {
+      targetDomain = config.tencent_dns_domain || config.esa_domain;
+    } else {
+      targetDomain = config.esa_domain;
+    }
     
     if (!targetDomain) {
-      throw new Error('未提供域名参数，且配置文件中未找到 esa_domain 配置');
+      throw new Error(`未提供域名参数，且配置文件中未找到 ${provider === 'ali' ? 'ali_dns_domain' : provider === 'tencent' ? 'tencent_dns_domain' : 'esa_domain'} 配置`);
     }
   }
 

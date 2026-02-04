@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const logger = require('./logger');
@@ -10,6 +11,7 @@ const configRoute = require('./router/config');
 const { startScheduler } = require('./scheduler');
 
 // 中间件
+app.use(cors()); // 启用跨域支持
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -21,7 +23,7 @@ app.use('/', configRoute);
 
 // 启动服务器
 app.listen(PORT, () => {
-  logger.success(`🚀 服务器启动成功，运行在 http://localhost:${PORT}`);
+  logger.info(`🚀 服务器启动成功，运行在 http://localhost:${PORT}`);
   // 启动定时任务
   startScheduler();
 });

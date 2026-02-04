@@ -90,7 +90,7 @@ class ESADnsService {
 
       const {esa_domain} = getConfig()
       const domainName = esa_domain ? getDomainRecordValue(recordName)+"." + esa_domain : recordName;
-      logger.debug('创建DNS记录', { domain: domainName, targetValue });
+      logger.debug('创建ESA-DNS记录', { domain: domainName, targetValue });
 
       const request = new CreateRecordRequest({
         type: 'CNAME',
@@ -111,7 +111,7 @@ class ESADnsService {
       const response = await this.client.createRecord(request);
       return response.body;
     } catch (error) {
-      logger.error(`创建DNS记录失败 [${params.recordName}]`, error);
+      logger.error(`创建ESA-DNS记录失败 [${params.recordName}]`, error);
       throw error;
     }
   }
@@ -197,7 +197,7 @@ async getEsaCnameValueByRecordId(recordId) {
               siteId: siteId,
             });
 
-            logger.success(`🌐 DNS记录创建成功: ${domain} -> ${targetValue}`, {
+            logger.success(`🌐 ESA-DNS记录创建成功: ${domain} -> ${targetValue}`, {
               domain,
               targetValue,
               recordId: result.recordId,

@@ -85,7 +85,7 @@ async function executeTask() {
     const timestamp = Date.now();
     
     // 构建请求 URL，添加时间戳和 openToken 参数
-    const url = new URL(lucky_url);
+    const url = new URL(lucky_url + '/api/webservice/rules');
     url.searchParams.append('_', timestamp.toString());
     url.searchParams.append('openToken', lucky_open_token);
     // 发送 GET 请求
@@ -139,7 +139,7 @@ async function executeTask() {
     }
 
     const nextInvocation = currentJob ? dayjs(currentJob.nextInvocation()).format('YYYY-MM-DD HH:mm:ss') : '未知';
-    logger.success('⏱️ 定时任务执行完成');
+    logger.info('⏱️ 定时任务执行完成');
     logger.info(`🕐 下一次任务执行时间: ${nextInvocation}`);
   } catch (error) {
     logger.error('🕐 定时任务执行失败', error);
@@ -164,7 +164,7 @@ function startScheduler() {
   try {
     // 使用 Cron 表达式创建定时任务
     currentJob = schedule.scheduleJob(lucky_cron_time, executeTask);
-    logger.success(`⏰ 定时任务已启动，Cron 表达式: ${lucky_cron_time}`, { cron: lucky_cron_time });
+    logger.info(`⏰ 定时任务已启动，Cron 表达式: ${lucky_cron_time}`);
     executeTask()
   } catch (error) {
     logger.error('启动定时任务失败', error);

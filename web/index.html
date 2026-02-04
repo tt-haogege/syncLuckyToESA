@@ -170,16 +170,85 @@
     .form-textarea {
       padding: 10px 12px;
       border: 1px solid var(--border-color);
-      border-radius: 6px;
+      border-radius: 8px;
       background: var(--bg-primary);
       color: var(--text-primary);
       font-size: 14px;
-      transition: all 0.3s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       font-family: inherit;
     }
 
+    /* 自定义下拉选择框容器 */
+    .custom-select-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .form-select {
+      padding-right: 40px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"] .form-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b0b0b0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-select:hover {
+      border-color: var(--accent);
+      background-color: var(--bg-secondary);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--accent);
+    }
+
+    [data-theme="dark"] .form-select:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--accent);
+    }
+
+    .form-select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1);
+      background-color: var(--bg-primary);
+    }
+
+    [data-theme="dark"] .form-select:focus {
+      box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.3), 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .form-select:active {
+      transform: translateY(0);
+    }
+
+    /* 现代化下拉选项样式 */
+    .form-select option {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin: 4px 0;
+    }
+
+    .form-select option:hover {
+      background: var(--bg-secondary);
+    }
+
+    .form-select option:checked {
+      background: var(--accent);
+      color: white;
+    }
+
     .form-input:focus,
-    .form-select:focus,
     .form-textarea:focus {
       outline: none;
       border-color: var(--accent);
@@ -292,26 +361,113 @@
     }
 
     .message {
-      padding: 12px 16px;
-      border-radius: 6px;
-      margin-bottom: 20px;
-      display: none;
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px) scale(0.9);
+      padding: 14px 20px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-width: 320px;
+      max-width: 90%;
+      z-index: 10000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(10px);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    [data-theme="dark"] .message {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
 
     .message.show {
-      display: block;
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0) scale(1);
     }
 
     .message.success {
-      background: rgba(40, 167, 69, 0.1);
+      background: rgba(40, 167, 69, 0.95);
       border: 1px solid var(--success);
-      color: var(--success);
+      color: white;
+    }
+
+    [data-theme="dark"] .message.success {
+      background: rgba(40, 167, 69, 0.9);
     }
 
     .message.error {
-      background: rgba(220, 53, 69, 0.1);
+      background: rgba(220, 53, 69, 0.95);
       border: 1px solid var(--error);
-      color: var(--error);
+      color: white;
+    }
+
+    [data-theme="dark"] .message.error {
+      background: rgba(220, 53, 69, 0.9);
+    }
+
+    .message-close {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.8;
+      transition: all 0.2s;
+      font-size: 20px;
+      line-height: 1;
+      flex-shrink: 0;
+      border-radius: 4px;
+      width: 28px;
+      height: 28px;
+    }
+
+    .message-close:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+
+    .message-close:active {
+      transform: scale(0.95);
+    }
+
+    .message-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .message-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .message.success .message-icon {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .message.error .message-icon {
+      background: rgba(255, 255, 255, 0.25);
     }
 
     /* 日志页面样式 */
@@ -441,6 +597,20 @@
 
     /* 响应式设计 */
     @media (max-width: 768px) {
+      .message {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        transform: translateX(0) translateY(-100px) scale(0.9);
+        min-width: auto;
+        max-width: none;
+        width: calc(100% - 20px);
+      }
+
+      .message.show {
+        transform: translateX(0) translateY(0) scale(1);
+      }
+
       .container {
         padding: 15px;
       }
@@ -511,17 +681,23 @@
 
     <!-- 配置页面 -->
     <div class="tab-content active" id="configTab">
-      <div class="message" id="configMessage"></div>
+      <div class="message" id="configMessage">
+        <div class="message-content">
+          <span class="message-icon"></span>
+          <span class="message-text"></span>
+        </div>
+        <button class="message-close" aria-label="关闭">×</button>
+      </div>
       
       <form class="config-form" id="configForm">
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label required">Lucky URL</label>
-            <input type="text" class="form-input" name="lucky_url" placeholder="https://lucky.tthaogege.cn/lucky/api/webservice/rules" required>
+            <label class="form-label required">Lucky访问地址</label>
+            <input type="text" class="form-input" name="lucky_url" placeholder="https://lucky.nasqdz.top/lucky" required>
           </div>
 
           <div class="form-group">
-            <label class="form-label required">Lucky Cron Time</label>
+            <label class="form-label required">cron时间</label>
             <input type="text" class="form-input" name="lucky_cron_time" placeholder="0 */10 * * * *" required>
             <div class="form-help">Cron 表达式，例如: 0 */10 * * * * (每10分钟)</div>
           </div>
@@ -529,120 +705,128 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label required">Lucky Open Token</label>
+            <label class="form-label required">Lucky Token</label>
             <input type="text" class="form-input" name="lucky_open_token" placeholder="输入 token" required>
           </div>
 
           <div class="form-group">
-            <label class="form-label">ESA Region ID</label>
+            <label class="form-label">ESA地区ID</label>
             <input type="text" class="form-input" name="esa_region_id" placeholder="cn-hangzhou">
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label required">ESA Access Key ID</label>
+            <label class="form-label required">ESA访问Key</label>
             <input type="text" class="form-input" name="esa_access_key_id" placeholder="输入 Access Key ID" required>
           </div>
 
           <div class="form-group">
-            <label class="form-label required">ESA Access Key Secret</label>
+            <label class="form-label required">ESA访问密钥</label>
             <input type="password" class="form-input" name="esa_access_key_secret" placeholder="输入 Access Key Secret" required>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label required">ESA Domain</label>
+            <label class="form-label required">ESA站点域名</label>
             <input type="text" class="form-input" name="esa_domain" placeholder="nasqdz.top" required>
           </div>
 
           <div class="form-group">
-            <label class="form-label required">ESA Site ID</label>
+            <label class="form-label required">ESA站点ID</label>
             <input type="text" class="form-input" name="esa_site_id" placeholder="输入 Site ID" required>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">ESA Target Value</label>
+            <label class="form-label">ESA回源域名</label>
             <input type="text" class="form-input" name="esa_target_value" placeholder="目标值">
           </div>
 
           <div class="form-group">
-            <label class="form-label">ESA Host Policy</label>
+            <label class="form-label">ESA回源HOST策略</label>
             <select class="form-select" name="esa_host_policy">
-              <option value="follow_hostname">follow_hostname</option>
-              <option value="custom">custom</option>
+              <option value="follow_hostname">跟随请求HOST</option>
+              <option value="follow_origin_domain">跟随回源域名</option>
             </select>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">ESA DNS Analysis</label>
+            <label class="form-label">是否开启DNS解析</label>
             <div class="switch-container">
               <div class="switch" id="esa_dns_analysis_switch" data-field="esa_dns_analysis"></div>
               <span id="esa_dns_analysis_label">关闭</span>
             </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">ESA DNS Provider</label>
-            <select class="form-select" name="esa_dns_provider" id="esa_dns_provider">
-              <option value="ali">阿里云 (Ali)</option>
-              <option value="tencent">腾讯云 (Tencent)</option>
-            </select>
+            <div class="form-help" style="margin-top: 8px; color: var(--info);">
+              💡 CNAME模式接入ESA，建议开启，开启后自动添加DNS解析
+            </div>
           </div>
         </div>
 
-        <!-- 阿里云 DNS 配置 -->
-        <div class="form-row" id="aliDnsConfig">
-          <div class="form-group">
-            <label class="form-label">Ali DNS Region ID</label>
-            <input type="text" class="form-input" name="ali_dns_region_id" placeholder="cn-hangzhou">
+        <!-- DNS 配置区域（当开关开启时显示） -->
+        <div id="dnsConfigArea" style="display: none;">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">域名解析DNS服务商</label>
+              <select class="form-select" name="esa_dns_provider" id="esa_dns_provider">
+                <option value="ali">阿里云 (Ali)</option>
+                <option value="tencent">腾讯云 (Tencent)</option>
+              </select>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Ali DNS Domain</label>
-            <input type="text" class="form-input" name="ali_dns_domain" placeholder="nasqdz.top">
-          </div>
-        </div>
+          <!-- 阿里云 DNS 配置 -->
+          <div class="form-row" id="aliDnsConfig" style="display: none;">
+            <div class="form-group">
+              <label class="form-label">阿里DNS地区</label>
+              <input type="text" class="form-input" name="ali_dns_region_id" placeholder="cn-hangzhou">
+            </div>
 
-        <!-- 腾讯云 DNS 配置 -->
-        <div class="form-row" id="tencentDnsConfig" style="display: none;">
-          <div class="form-group">
-            <label class="form-label" id="tencent_secret_id_label">Tencent DNS Secret ID</label>
-            <input type="text" class="form-input" name="tencent_dns_secret_id" placeholder="输入 Secret ID">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" id="tencent_secret_key_label">Tencent DNS Secret Key</label>
-            <input type="password" class="form-input" name="tencent_dns_secret_key" placeholder="输入 Secret Key">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Tencent DNS Region</label>
-            <input type="text" class="form-input" name="tencent_dns_region" placeholder="ap-beijing">
+            <div class="form-group">
+              <label class="form-label">阿里DNS域名</label>
+              <input type="text" class="form-input" name="ali_dns_domain" placeholder="nasqdz.top">
+            </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Tencent DNS Domain</label>
-            <input type="text" class="form-input" name="tencent_dns_domain" placeholder="nasqdz.top">
+          <!-- 腾讯云 DNS 配置 -->
+          <div class="form-row" id="tencentDnsConfig" style="display: none;">
+            <div class="form-group">
+              <label class="form-label" id="tencent_secret_id_label">腾讯云Secret ID</label>
+              <input type="text" class="form-input" name="tencent_dns_secret_id" placeholder="输入 Secret ID">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" id="tencent_secret_key_label">腾讯云Secret Key</label>
+              <input type="password" class="form-input" name="tencent_dns_secret_key" placeholder="输入 Secret Key">
+            </div>
+          </div>
+
+          <div class="form-row" id="tencentDnsRegionConfig" style="display: none;">
+            <div class="form-group">
+              <label class="form-label">腾讯DNS地区</label>
+              <input type="text" class="form-input" name="tencent_dns_region" placeholder="ap-beijing">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">腾讯DNS域名</label>
+              <input type="text" class="form-input" name="tencent_dns_domain" placeholder="nasqdz.top">
+            </div>
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">ESA Target Value Function</label>
+          <label class="form-label">ESA回源域名自定义函数</label>
           <textarea class="form-textarea code-editor" name="esa_target_value_function" placeholder="function getTargetValue (rule, getDomainRecordValue) {&#10;    const targetValue = getDomainRecordValue(rule.Domains[0])+'a.nasqdz.top';&#10;    return targetValue;&#10;}"></textarea>
           <div class="form-help">JavaScript 函数代码，用于计算目标值</div>
         </div>
 
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">💾 保存配置</button>
-          <button type="button" class="btn btn-secondary" id="resetBtn">🔄 重置</button>
+          <!-- <button type="button" class="btn btn-secondary" id="resetBtn">🔄 重置</button> -->
         </div>
       </form>
     </div>
@@ -680,7 +864,7 @@
   </div>
 
   <script>
-    // API 基础 URL
+    // API 基础 URL（通过 nginx 反向代理）
     const API_BASE = '';
 
     // 主题管理
@@ -778,37 +962,90 @@
     });
 
     function toggleDnsProvider(provider) {
+      const dnsConfigArea = document.getElementById('dnsConfigArea');
       const aliConfig = document.getElementById('aliDnsConfig');
       const tencentConfig = document.getElementById('tencentDnsConfig');
+      const tencentRegionConfig = document.getElementById('tencentDnsRegionConfig');
       const tencentSecretIdLabel = document.getElementById('tencent_secret_id_label');
       const tencentSecretKeyLabel = document.getElementById('tencent_secret_key_label');
       const tencentSecretIdInput = document.querySelector('input[name="tencent_dns_secret_id"]');
       const tencentSecretKeyInput = document.querySelector('input[name="tencent_dns_secret_key"]');
 
+      // 确保 DNS 配置区域是显示的
+      if (dnsConfigArea) {
+        dnsConfigArea.style.display = 'block';
+      }
+
       if (provider === 'tencent') {
-        aliConfig.style.display = 'none';
-        tencentConfig.style.display = 'grid';
-        tencentSecretIdLabel.classList.add('required');
-        tencentSecretKeyLabel.classList.add('required');
-        tencentSecretIdInput.required = true;
-        tencentSecretKeyInput.required = true;
+        // 显示腾讯云配置，隐藏阿里云配置
+        if (aliConfig) aliConfig.style.display = 'none';
+        if (tencentConfig) tencentConfig.style.display = 'grid';
+        if (tencentRegionConfig) tencentRegionConfig.style.display = 'grid';
+        
+        if (tencentSecretIdLabel) tencentSecretIdLabel.classList.add('required');
+        if (tencentSecretKeyLabel) tencentSecretKeyLabel.classList.add('required');
+        if (tencentSecretIdInput) tencentSecretIdInput.required = true;
+        if (tencentSecretKeyInput) tencentSecretKeyInput.required = true;
       } else {
-        aliConfig.style.display = 'grid';
-        tencentConfig.style.display = 'none';
-        tencentSecretIdLabel.classList.remove('required');
-        tencentSecretKeyLabel.classList.remove('required');
-        tencentSecretIdInput.required = false;
-        tencentSecretKeyInput.required = false;
+        // 显示阿里云配置，隐藏腾讯云配置
+        if (aliConfig) aliConfig.style.display = 'grid';
+        if (tencentConfig) tencentConfig.style.display = 'none';
+        if (tencentRegionConfig) tencentRegionConfig.style.display = 'none';
+        
+        if (tencentSecretIdLabel) tencentSecretIdLabel.classList.remove('required');
+        if (tencentSecretKeyLabel) tencentSecretKeyLabel.classList.remove('required');
+        if (tencentSecretIdInput) tencentSecretIdInput.required = false;
+        if (tencentSecretKeyInput) tencentSecretKeyInput.required = false;
       }
     }
 
     function toggleDnsConfig(enabled) {
+      const dnsConfigArea = document.getElementById('dnsConfigArea');
       const provider = document.getElementById('esa_dns_provider').value;
+      
       if (enabled) {
+        // 开启时显示 DNS 配置区域，并根据服务商显示对应配置
+        if (dnsConfigArea) {
+          dnsConfigArea.style.display = 'block';
+        }
         toggleDnsProvider(provider);
       } else {
-        document.getElementById('aliDnsConfig').style.display = 'none';
-        document.getElementById('tencentDnsConfig').style.display = 'none';
+        // 关闭时隐藏所有 DNS 配置，并移除所有DNS相关字段的required属性
+        if (dnsConfigArea) {
+          dnsConfigArea.style.display = 'none';
+        }
+        if (document.getElementById('aliDnsConfig')) {
+          document.getElementById('aliDnsConfig').style.display = 'none';
+        }
+        if (document.getElementById('tencentDnsConfig')) {
+          document.getElementById('tencentDnsConfig').style.display = 'none';
+        }
+        if (document.getElementById('tencentDnsRegionConfig')) {
+          document.getElementById('tencentDnsRegionConfig').style.display = 'none';
+        }
+        
+        // 移除所有DNS相关字段的required属性，避免表单验证失败
+        const tencentSecretIdInput = document.querySelector('input[name="tencent_dns_secret_id"]');
+        const tencentSecretKeyInput = document.querySelector('input[name="tencent_dns_secret_key"]');
+        const tencentSecretIdLabel = document.getElementById('tencent_secret_id_label');
+        const tencentSecretKeyLabel = document.getElementById('tencent_secret_key_label');
+        
+        if (tencentSecretIdInput) {
+          tencentSecretIdInput.required = false;
+          tencentSecretIdInput.removeAttribute('required');
+          tencentSecretIdInput.classList.remove('error');
+        }
+        if (tencentSecretKeyInput) {
+          tencentSecretKeyInput.required = false;
+          tencentSecretKeyInput.removeAttribute('required');
+          tencentSecretKeyInput.classList.remove('error');
+        }
+        if (tencentSecretIdLabel) {
+          tencentSecretIdLabel.classList.remove('required');
+        }
+        if (tencentSecretKeyLabel) {
+          tencentSecretKeyLabel.classList.remove('required');
+        }
       }
     }
 
@@ -820,28 +1057,40 @@
 
         // 填充表单
         Object.keys(config).forEach(key => {
-          const input = document.querySelector(`[name="${key}"]`);
-          if (input) {
-            if (input.type === 'checkbox' || (input.classList && input.classList.contains('switch'))) {
-              // Switch 处理
-              const switchEl = document.getElementById(key + '_switch');
-              if (switchEl) {
-                if (config[key]) {
-                  switchEl.classList.add('active');
-                  switchEl.nextElementSibling.textContent = '开启';
-                } else {
-                  switchEl.classList.remove('active');
-                  switchEl.nextElementSibling.textContent = '关闭';
-                }
+          // 先检查是否是 switch 类型的字段
+          const switchEl = document.getElementById(key + '_switch');
+          if (switchEl) {
+            // Switch 处理：将值转换为布尔值
+            const value = config[key];
+            const boolValue = value === true || value === 'true' || value === 1 || value === '1';
+            
+            if (boolValue) {
+              switchEl.classList.add('active');
+              const label = switchEl.nextElementSibling;
+              if (label) {
+                label.textContent = '开启';
               }
             } else {
+              switchEl.classList.remove('active');
+              const label = switchEl.nextElementSibling;
+              if (label) {
+                label.textContent = '关闭';
+              }
+            }
+          } else {
+            // 普通 input 处理
+            const input = document.querySelector(`[name="${key}"]`);
+            if (input && input.type !== 'hidden') {
               input.value = config[key] || '';
             }
           }
         });
 
-        // 处理 DNS 相关显示
-        if (config.esa_dns_analysis) {
+        // 处理 DNS 相关显示：将值转换为布尔值
+        const dnsAnalysisValue = config.esa_dns_analysis;
+        const isDnsAnalysisEnabled = dnsAnalysisValue === true || dnsAnalysisValue === 'true' || dnsAnalysisValue === 1 || dnsAnalysisValue === '1';
+        
+        if (isDnsAnalysisEnabled) {
           toggleDnsConfig(true);
           toggleDnsProvider(config.esa_dns_provider || 'ali');
         } else {
@@ -879,8 +1128,9 @@
       const requiredFields = ['lucky_url', 'lucky_cron_time', 'lucky_open_token', 'esa_access_key_id', 'esa_access_key_secret', 'esa_domain', 'esa_site_id'];
       const missingFields = requiredFields.filter(field => !config[field] || config[field].trim() === '');
 
+      // 只有当 DNS 解析开关开启时，才验证 DNS 相关字段
       // 如果 esa_dns_analysis 为 true 且 provider 为 tencent，验证腾讯云字段
-      if (config.esa_dns_analysis && config.esa_dns_provider === 'tencent') {
+      if (config.esa_dns_analysis === true && config.esa_dns_provider === 'tencent') {
         if (!config.tencent_dns_secret_id || config.tencent_dns_secret_id.trim() === '') {
           missingFields.push('tencent_dns_secret_id');
         }
@@ -916,19 +1166,53 @@
     });
 
     // 重置按钮
-    document.getElementById('resetBtn').addEventListener('click', () => {
-      if (confirm('确定要重置表单吗？')) {
-        loadConfig();
-      }
-    });
+    // document.getElementById('resetBtn').addEventListener('click', () => {
+    //   if (confirm('确定要重置表单吗？')) {
+    //     loadConfig();
+    //   }
+    // });
 
     // 消息提示
     function showMessage(message, type) {
-      configMessage.textContent = message;
+      const messageText = configMessage.querySelector('.message-text');
+      const messageIcon = configMessage.querySelector('.message-icon');
+      
+      // 设置消息文本
+      if (messageText) {
+        messageText.textContent = message;
+      }
+      
+      // 设置图标
+      if (messageIcon) {
+        if (type === 'success') {
+          messageIcon.textContent = '✓';
+        } else if (type === 'error') {
+          messageIcon.textContent = '✕';
+        } else {
+          messageIcon.textContent = 'ℹ';
+        }
+      }
+      
+      // 设置类型和显示
       configMessage.className = `message ${type} show`;
-      setTimeout(() => {
+      
+      // 自动隐藏（5秒后）
+      const timeoutId = setTimeout(() => {
         configMessage.classList.remove('show');
-      }, 3000);
+      }, 5000);
+      
+      // 关闭按钮功能
+      const closeBtn = configMessage.querySelector('.message-close');
+      if (closeBtn) {
+        // 移除之前的监听器（如果有）
+        const newCloseBtn = closeBtn.cloneNode(true);
+        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+        
+        newCloseBtn.addEventListener('click', () => {
+          clearTimeout(timeoutId);
+          configMessage.classList.remove('show');
+        });
+      }
     }
 
     // 日志管理
