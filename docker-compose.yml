@@ -1,14 +1,7 @@
 version: '3.8'
 
 services:
-  app:
-    build: .
+  sync-lucky-to-esa:
+    image: ghcr.io/tt-haogege/sync-lucky-to-esa
     ports:
-      - "80:80"
-    volumes:
-      # 如果需要持久化配置，可以挂载配置文件
-      # - ./server/config.json:/app/config.json
-    restart: unless-stopped
-    environment:
-      - PORT=3000
-      - NODE_ENV=production
+      - "8036:80"
