@@ -1,0 +1,21 @@
+{
+  "lucky_url": "",
+  "lucky_cron_time": "0 */2 * * * *",
+  "lucky_open_token": "",
+  "esa_access_key_id": " ",
+  "esa_access_key_secret": "",
+  "esa_region_id": "cn-hangzhou",
+  "esa_domain": "",
+  "esa_site_id": "",
+  "esa_target_value": "",
+  "esa_dns_analysis": false,
+  "esa_dns_provider": "ali",
+  "esa_host_policy": "follow_hostname",
+  "esa_target_value_function": "",
+  "ali_dns_region_id": "cn-hangzhou",
+  "ali_dns_domain": "",
+  "tencent_dns_secret_id": "",
+  "tencent_dns_secret_key": "",
+  "tencent_dns_region": "ap-beijing",
+  "tencent_dns_domain": ""
+}

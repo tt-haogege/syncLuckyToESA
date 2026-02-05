@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESA DNS 配置管理</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      /* 白天模式 */
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f5;
+      --bg-tertiary: #e8e8e8;
+      --text-primary: #1a1a1a;
+      --text-secondary: #666666;
+      --text-tertiary: #999999;
+      --border-color: #e0e0e0;
+      --shadow: rgba(0, 0, 0, 0.1);
+      --accent: #007bff;
+      --accent-hover: #0056b3;
+      --success: #28a745;
+      --warning: #ffc107;
+      --error: #dc3545;
+      --info: #17a2b8;
+    }
+
+    [data-theme="dark"] {
+      /* 黑夜模式 */
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #2d2d2d;
+      --bg-tertiary: #3d3d3d;
+      --text-primary: #e8e8e8;
+      --text-secondary: #b0b0b0;
+      --text-tertiary: #808080;
+      --border-color: #404040;
+      --shadow: rgba(0, 0, 0, 0.5);
+      --accent: #4a9eff;
+      --accent-hover: #6bb3ff;
+      --success: #48bb78;
+      --warning: #ed8936;
+      --error: #f56565;
+      --info: #38b2ac;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      transition: background-color 0.3s, color 0.3s;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .theme-toggle {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-primary);
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .tab {
+      padding: 12px 24px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--text-secondary);
+      transition: all 0.3s;
+      position: relative;
+      top: 2px;
+    }
+
+    .tab:hover {
+      color: var(--text-primary);
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 600;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* 配置页面样式 */
+    .config-form {
+      display: grid;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .form-label {
+      font-weight: 500;
+      color: var(--text-primary);
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-label.required::after {
+      content: '*';
+      color: var(--error);
+      margin-left: 4px;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 14px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: inherit;
+    }
+
+    /* 自定义下拉选择框容器 */
+    .custom-select-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .form-select {
+      padding-right: 40px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"] .form-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b0b0b0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-select:hover {
+      border-color: var(--accent);
+      background-color: var(--bg-secondary);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--accent);
+    }
+
+    [data-theme="dark"] .form-select:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--accent);
+    }
+
+    .form-select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1);
+      background-color: var(--bg-primary);
+    }
+
+    [data-theme="dark"] .form-select:focus {
+      box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.3), 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .form-select:active {
+      transform: translateY(0);
+    }
+
+    /* 现代化下拉选项样式 */
+    .form-select option {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin: 4px 0;
+    }
+
+    .form-select option:hover {
+      background: var(--bg-secondary);
+    }
+
+    .form-select option:checked {
+      background: var(--accent);
+      color: white;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.1);
+    }
+
+    .form-input.error,
+    .form-select.error,
+    .form-textarea.error {
+      border-color: var(--error);
+    }
+
+    .form-textarea {
+      min-height: 120px;
+      resize: vertical;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 13px;
+    }
+
+    .form-textarea.code-editor {
+      min-height: 200px;
+    }
+
+    .switch-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .switch {
+      position: relative;
+      width: 50px;
+      height: 26px;
+      background: var(--bg-tertiary);
+      border-radius: 13px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .switch.active {
+      background: var(--success);
+    }
+
+    .switch::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: white;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.3s;
+      box-shadow: 0 2px 4px var(--shadow);
+    }
+
+    .switch.active::after {
+      transform: translateX(24px);
+    }
+
+    .form-help {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: -4px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .message {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px) scale(0.9);
+      padding: 14px 20px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-width: 320px;
+      max-width: 90%;
+      z-index: 10000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(10px);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    [data-theme="dark"] .message {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .message.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+
+    .message.success {
+      background: rgba(40, 167, 69, 0.95);
+      border: 1px solid var(--success);
+      color: white;
+    }
+
+    [data-theme="dark"] .message.success {
+      background: rgba(40, 167, 69, 0.9);
+    }
+
+    .message.error {
+      background: rgba(220, 53, 69, 0.95);
+      border: 1px solid var(--error);
+      color: white;
+    }
+
+    [data-theme="dark"] .message.error {
+      background: rgba(220, 53, 69, 0.9);
+    }
+
+    .message-close {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.8;
+      transition: all 0.2s;
+      font-size: 20px;
+      line-height: 1;
+      flex-shrink: 0;
+      border-radius: 4px;
+      width: 28px;
+      height: 28px;
+    }
+
+    .message-close:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+
+    .message-close:active {
+      transform: scale(0.95);
+    }
+
+    .message-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .message-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .message.success .message-icon {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .message.error .message-icon {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* 日志页面样式 */
+    .logs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .logs-filters {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .logs-stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      padding: 16px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .logs-container {
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      padding: 20px;
+      max-height: 70vh;
+      overflow-y: auto;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .log-entry {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-color);
+      word-wrap: break-word;
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .log-time {
+      color: var(--text-tertiary);
+      margin-right: 8px;
+    }
+
+    .log-level {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 11px;
+      margin-right: 8px;
+      text-transform: uppercase;
+    }
+
+    .log-level.INFO {
+      background: rgba(23, 162, 184, 0.2);
+      color: #17a2b8;
+    }
+
+    .log-level.SUCCESS {
+      background: rgba(40, 167, 69, 0.2);
+      color: #28a745;
+    }
+
+    .log-level.WARN {
+      background: rgba(255, 193, 7, 0.2);
+      color: #ffc107;
+    }
+
+    .log-level.ERROR {
+      background: rgba(220, 53, 69, 0.2);
+      color: #dc3545;
+    }
+
+    .log-level.DEBUG {
+      background: rgba(0, 123, 255, 0.2);
+      color: #007bff;
+    }
+
+    .log-message {
+      color: var(--text-primary);
+    }
+
+    .log-data {
+      margin-top: 8px;
+      padding: 8px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+
+    .empty-logs {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-tertiary);
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .message {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        transform: translateX(0) translateY(-100px) scale(0.9);
+        min-width: auto;
+        max-width: none;
+        width: calc(100% - 20px);
+      }
+
+      .message.show {
+        transform: translateX(0) translateY(0) scale(1);
+      }
+
+      .container {
+        padding: 15px;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .logs-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .logs-filters {
+        width: 100%;
+      }
+
+      .logs-filters select {
+        flex: 1;
+      }
+    }
+
+    /* 滚动条样式 */
+    .logs-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .logs-container::-webkit-scrollbar-track {
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+    }
+
+    .logs-container::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+
+    .logs-container::-webkit-scrollbar-thumb:hover {
+      background: var(--text-tertiary);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🌐 ESA DNS 配置管理</h1>
+      <button class="theme-toggle" id="themeToggle">
+        <span id="themeIcon">🌙</span>
+        <span id="themeText">黑夜模式</span>
+      </button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="config">⚙️ 配置</button>
+      <button class="tab" data-tab="logs">📋 日志</button>
+    </div>
+
+    <!-- 配置页面 -->
+    <div class="tab-content active" id="configTab">
+      <div class="message" id="configMessage">
+        <div class="message-content">
+          <span class="message-icon"></span>
+          <span class="message-text"></span>
+        </div>
+        <button class="message-close" aria-label="关闭">×</button>
+      </div>
+      
+      <form class="config-form" id="configForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label required">Lucky访问地址</label>
+            <input type="text" class="form-input" name="lucky_url" placeholder="https://lucky.nasqdz.top/lucky" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">cron时间</label>
+            <input type="text" class="form-input" name="lucky_cron_time" placeholder="0 */10 * * * *" required>
+            <div class="form-help">Cron 表达式，例如: 0 */10 * * * * (每10分钟)</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label required">Lucky Token</label>
+            <input type="text" class="form-input" name="lucky_open_token" placeholder="输入 token" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ESA地区ID</label>
+            <input type="text" class="form-input" name="esa_region_id" placeholder="cn-hangzhou">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label required">ESA访问Key</label>
+            <input type="text" class="form-input" name="esa_access_key_id" placeholder="输入 Access Key ID" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">ESA访问密钥</label>
+            <input type="password" class="form-input" name="esa_access_key_secret" placeholder="输入 Access Key Secret" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label required">ESA站点域名</label>
+            <input type="text" class="form-input" name="esa_domain" placeholder="nasqdz.top" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">ESA站点ID</label>
+            <input type="text" class="form-input" name="esa_site_id" placeholder="输入 Site ID" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">ESA回源域名</label>
+            <input type="text" class="form-input" name="esa_target_value" placeholder="目标值">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ESA回源HOST策略</label>
+            <select class="form-select" name="esa_host_policy">
+              <option value="follow_hostname">跟随请求HOST</option>
+              <option value="follow_origin_domain">跟随回源域名</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">是否开启DNS解析</label>
+            <div class="switch-container">
+              <div class="switch" id="esa_dns_analysis_switch" data-field="esa_dns_analysis"></div>
+              <span id="esa_dns_analysis_label">关闭</span>
+            </div>
+            <div class="form-help" style="margin-top: 8px; color: var(--info);">
+              💡 CNAME模式接入ESA，建议开启，开启后自动添加DNS解析
+            </div>
+          </div>
+        </div>
+
+        <!-- DNS 配置区域（当开关开启时显示） -->
+        <div id="dnsConfigArea" style="display: none;">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">域名解析DNS服务商</label>
+              <select class="form-select" name="esa_dns_provider" id="esa_dns_provider">
+                <option value="ali">阿里云 (Ali)</option>
+                <option value="tencent">腾讯云 (Tencent)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 阿里云 DNS 配置 -->
+          <div class="form-row" id="aliDnsConfig" style="display: none;">
+            <div class="form-group">
+              <label class="form-label">阿里DNS地区</label>
+              <input type="text" class="form-input" name="ali_dns_region_id" placeholder="cn-hangzhou">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">阿里DNS域名</label>
+              <input type="text" class="form-input" name="ali_dns_domain" placeholder="nasqdz.top">
+            </div>
+          </div>
+
+          <!-- 腾讯云 DNS 配置 -->
+          <div class="form-row" id="tencentDnsConfig" style="display: none;">
+            <div class="form-group">
+              <label class="form-label" id="tencent_secret_id_label">腾讯云Secret ID</label>
+              <input type="text" class="form-input" name="tencent_dns_secret_id" placeholder="输入 Secret ID">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" id="tencent_secret_key_label">腾讯云Secret Key</label>
+              <input type="password" class="form-input" name="tencent_dns_secret_key" placeholder="输入 Secret Key">
+            </div>
+          </div>
+
+          <div class="form-row" id="tencentDnsRegionConfig" style="display: none;">
+            <div class="form-group">
+              <label class="form-label">腾讯DNS地区</label>
+              <input type="text" class="form-input" name="tencent_dns_region" placeholder="ap-beijing">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">腾讯DNS域名</label>
+              <input type="text" class="form-input" name="tencent_dns_domain" placeholder="nasqdz.top">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">ESA回源域名自定义函数</label>
+          <textarea class="form-textarea code-editor" name="esa_target_value_function" placeholder="function getTargetValue (rule, getDomainRecordValue) {&#10;    const targetValue = getDomainRecordValue(rule.Domains[0])+'a.nasqdz.top';&#10;    return targetValue;&#10;}"></textarea>
+          <div class="form-help">JavaScript 函数代码，用于计算目标值</div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">💾 保存配置</button>
+          <!-- <button type="button" class="btn btn-secondary" id="resetBtn">🔄 重置</button> -->
+        </div>
+      </form>
+    </div>
+
+    <!-- 日志页面 -->
+    <div class="tab-content" id="logsTab">
+      <div class="logs-header">
+        <div class="logs-filters">
+          <select class="form-select" id="logLevelFilter">
+            <option value="">所有级别</option>
+            <option value="INFO">INFO</option>
+            <option value="SUCCESS">SUCCESS</option>
+            <option value="WARN">WARN</option>
+            <option value="ERROR">ERROR</option>
+            <option value="DEBUG">DEBUG</option>
+          </select>
+          <select class="form-select" id="logLimitFilter">
+            <option value="50">最近 50 条</option>
+            <option value="100">最近 100 条</option>
+            <option value="200">最近 200 条</option>
+            <option value="500">最近 500 条</option>
+            <option value="">全部</option>
+          </select>
+          <button class="btn btn-secondary" id="refreshLogsBtn">🔄 刷新</button>
+          <button class="btn btn-secondary" id="clearLogsBtn">🗑️ 清空</button>
+        </div>
+      </div>
+
+      <div class="logs-stats" id="logsStats"></div>
+
+      <div class="logs-container" id="logsContainer">
+        <div class="empty-logs">加载中...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API 基础 URL（通过 nginx 反向代理）
+    const API_BASE = '';
+
+    // 主题管理
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const themeText = document.getElementById('themeText');
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeUI(savedTheme);
+    }
+
+    function updateThemeUI(theme) {
+      if (theme === 'dark') {
+        themeIcon.textContent = '☀️';
+        themeText.textContent = '白天模式';
+      } else {
+        themeIcon.textContent = '🌙';
+        themeText.textContent = '黑夜模式';
+      }
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeUI(newTheme);
+    });
+
+    // 页签切换
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const targetTab = tab.getAttribute('data-tab');
+        
+        // 更新页签状态
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        // 更新内容显示
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.remove('active');
+        });
+        document.getElementById(targetTab + 'Tab').classList.add('active');
+
+        // 如果切换到日志页，加载日志
+        if (targetTab === 'logs') {
+          loadLogs();
+        }
+      });
+    });
+
+    // 配置表单管理
+    const configForm = document.getElementById('configForm');
+    const configMessage = document.getElementById('configMessage');
+
+    // Switch 组件
+    function initSwitches() {
+      document.querySelectorAll('.switch').forEach(switchEl => {
+        switchEl.addEventListener('click', () => {
+          const field = switchEl.getAttribute('data-field');
+          const isActive = switchEl.classList.contains('active');
+          
+          switchEl.classList.toggle('active');
+          const formInput = document.querySelector(`input[name="${field}"], input[type="hidden"][name="${field}"]`);
+          
+          if (!formInput) {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = field;
+            hiddenInput.value = !isActive;
+            configForm.appendChild(hiddenInput);
+          } else {
+            formInput.value = !isActive;
+          }
+
+          // 更新标签
+          const label = switchEl.nextElementSibling;
+          if (label) {
+            label.textContent = !isActive ? '开启' : '关闭';
+          }
+
+          // 特殊处理：esa_dns_analysis 切换时显示/隐藏 DNS 配置
+          if (field === 'esa_dns_analysis') {
+            toggleDnsConfig(!isActive);
+          }
+        });
+      });
+    }
+
+    // DNS Provider 切换
+    document.getElementById('esa_dns_provider').addEventListener('change', (e) => {
+      toggleDnsProvider(e.target.value);
+    });
+
+    function toggleDnsProvider(provider) {
+      const dnsConfigArea = document.getElementById('dnsConfigArea');
+      const aliConfig = document.getElementById('aliDnsConfig');
+      const tencentConfig = document.getElementById('tencentDnsConfig');
+      const tencentRegionConfig = document.getElementById('tencentDnsRegionConfig');
+      const tencentSecretIdLabel = document.getElementById('tencent_secret_id_label');
+      const tencentSecretKeyLabel = document.getElementById('tencent_secret_key_label');
+      const tencentSecretIdInput = document.querySelector('input[name="tencent_dns_secret_id"]');
+      const tencentSecretKeyInput = document.querySelector('input[name="tencent_dns_secret_key"]');
+
+      // 确保 DNS 配置区域是显示的
+      if (dnsConfigArea) {
+        dnsConfigArea.style.display = 'block';
+      }
+
+      if (provider === 'tencent') {
+        // 显示腾讯云配置，隐藏阿里云配置
+        if (aliConfig) aliConfig.style.display = 'none';
+        if (tencentConfig) tencentConfig.style.display = 'grid';
+        if (tencentRegionConfig) tencentRegionConfig.style.display = 'grid';
+        
+        if (tencentSecretIdLabel) tencentSecretIdLabel.classList.add('required');
+        if (tencentSecretKeyLabel) tencentSecretKeyLabel.classList.add('required');
+        if (tencentSecretIdInput) tencentSecretIdInput.required = true;
+        if (tencentSecretKeyInput) tencentSecretKeyInput.required = true;
+      } else {
+        // 显示阿里云配置，隐藏腾讯云配置
+        if (aliConfig) aliConfig.style.display = 'grid';
+        if (tencentConfig) tencentConfig.style.display = 'none';
+        if (tencentRegionConfig) tencentRegionConfig.style.display = 'none';
+        
+        if (tencentSecretIdLabel) tencentSecretIdLabel.classList.remove('required');
+        if (tencentSecretKeyLabel) tencentSecretKeyLabel.classList.remove('required');
+        if (tencentSecretIdInput) tencentSecretIdInput.required = false;
+        if (tencentSecretKeyInput) tencentSecretKeyInput.required = false;
+      }
+    }
+
+    function toggleDnsConfig(enabled) {
+      const dnsConfigArea = document.getElementById('dnsConfigArea');
+      const provider = document.getElementById('esa_dns_provider').value;
+      
+      if (enabled) {
+        // 开启时显示 DNS 配置区域，并根据服务商显示对应配置
+        if (dnsConfigArea) {
+          dnsConfigArea.style.display = 'block';
+        }
+        toggleDnsProvider(provider);
+      } else {
+        // 关闭时隐藏所有 DNS 配置，并移除所有DNS相关字段的required属性
+        if (dnsConfigArea) {
+          dnsConfigArea.style.display = 'none';
+        }
+        if (document.getElementById('aliDnsConfig')) {
+          document.getElementById('aliDnsConfig').style.display = 'none';
+        }
+        if (document.getElementById('tencentDnsConfig')) {
+          document.getElementById('tencentDnsConfig').style.display = 'none';
+        }
+        if (document.getElementById('tencentDnsRegionConfig')) {
+          document.getElementById('tencentDnsRegionConfig').style.display = 'none';
+        }
+        
+        // 移除所有DNS相关字段的required属性，避免表单验证失败
+        const tencentSecretIdInput = document.querySelector('input[name="tencent_dns_secret_id"]');
+        const tencentSecretKeyInput = document.querySelector('input[name="tencent_dns_secret_key"]');
+        const tencentSecretIdLabel = document.getElementById('tencent_secret_id_label');
+        const tencentSecretKeyLabel = document.getElementById('tencent_secret_key_label');
+        
+        if (tencentSecretIdInput) {
+          tencentSecretIdInput.required = false;
+          tencentSecretIdInput.removeAttribute('required');
+          tencentSecretIdInput.classList.remove('error');
+        }
+        if (tencentSecretKeyInput) {
+          tencentSecretKeyInput.required = false;
+          tencentSecretKeyInput.removeAttribute('required');
+          tencentSecretKeyInput.classList.remove('error');
+        }
+        if (tencentSecretIdLabel) {
+          tencentSecretIdLabel.classList.remove('required');
+        }
+        if (tencentSecretKeyLabel) {
+          tencentSecretKeyLabel.classList.remove('required');
+        }
+      }
+    }
+
+    // 加载配置
+    async function loadConfig() {
+      try {
+        const response = await fetch(`${API_BASE}/api/config`);
+        const config = await response.json();
+
+        // 填充表单
+        Object.keys(config).forEach(key => {
+          // 先检查是否是 switch 类型的字段
+          const switchEl = document.getElementById(key + '_switch');
+          if (switchEl) {
+            // Switch 处理：将值转换为布尔值
+            const value = config[key];
+            const boolValue = value === true || value === 'true' || value === 1 || value === '1';
+            
+            if (boolValue) {
+              switchEl.classList.add('active');
+              const label = switchEl.nextElementSibling;
+              if (label) {
+                label.textContent = '开启';
+              }
+            } else {
+              switchEl.classList.remove('active');
+              const label = switchEl.nextElementSibling;
+              if (label) {
+                label.textContent = '关闭';
+              }
+            }
+          } else {
+            // 普通 input 处理
+            const input = document.querySelector(`[name="${key}"]`);
+            if (input && input.type !== 'hidden') {
+              input.value = config[key] || '';
+            }
+          }
+        });
+
+        // 处理 DNS 相关显示：将值转换为布尔值
+        const dnsAnalysisValue = config.esa_dns_analysis;
+        const isDnsAnalysisEnabled = dnsAnalysisValue === true || dnsAnalysisValue === 'true' || dnsAnalysisValue === 1 || dnsAnalysisValue === '1';
+        
+        if (isDnsAnalysisEnabled) {
+          toggleDnsConfig(true);
+          toggleDnsProvider(config.esa_dns_provider || 'ali');
+        } else {
+          toggleDnsConfig(false);
+        }
+
+      } catch (error) {
+        showMessage('加载配置失败: ' + error.message, 'error');
+      }
+    }
+
+    // 保存配置
+    configForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(configForm);
+      const config = {};
+      
+      // 收集表单数据
+      formData.forEach((value, key) => {
+        if (key === 'esa_dns_analysis') {
+          config[key] = value === 'true';
+        } else {
+          config[key] = value;
+        }
+      });
+
+      // 处理 switch 值
+      document.querySelectorAll('.switch').forEach(switchEl => {
+        const field = switchEl.getAttribute('data-field');
+        config[field] = switchEl.classList.contains('active');
+      });
+
+      // 验证必填字段
+      const requiredFields = ['lucky_url', 'lucky_cron_time', 'lucky_open_token', 'esa_access_key_id', 'esa_access_key_secret', 'esa_domain', 'esa_site_id'];
+      const missingFields = requiredFields.filter(field => !config[field] || config[field].trim() === '');
+
+      // 只有当 DNS 解析开关开启时，才验证 DNS 相关字段
+      // 如果 esa_dns_analysis 为 true 且 provider 为 tencent，验证腾讯云字段
+      if (config.esa_dns_analysis === true && config.esa_dns_provider === 'tencent') {
+        if (!config.tencent_dns_secret_id || config.tencent_dns_secret_id.trim() === '') {
+          missingFields.push('tencent_dns_secret_id');
+        }
+        if (!config.tencent_dns_secret_key || config.tencent_dns_secret_key.trim() === '') {
+          missingFields.push('tencent_dns_secret_key');
+        }
+      }
+
+      if (missingFields.length > 0) {
+        showMessage('请填写必填字段: ' + missingFields.join(', '), 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/config`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(config),
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          showMessage('配置保存成功！', 'success');
+        } else {
+          showMessage('保存失败: ' + (result.message || '未知错误'), 'error');
+        }
+      } catch (error) {
+        showMessage('保存配置失败: ' + error.message, 'error');
+      }
+    });
+
+    // 重置按钮
+    // document.getElementById('resetBtn').addEventListener('click', () => {
+    //   if (confirm('确定要重置表单吗？')) {
+    //     loadConfig();
+    //   }
+    // });
+
+    // 消息提示
+    function showMessage(message, type) {
+      const messageText = configMessage.querySelector('.message-text');
+      const messageIcon = configMessage.querySelector('.message-icon');
+      
+      // 设置消息文本
+      if (messageText) {
+        messageText.textContent = message;
+      }
+      
+      // 设置图标
+      if (messageIcon) {
+        if (type === 'success') {
+          messageIcon.textContent = '✓';
+        } else if (type === 'error') {
+          messageIcon.textContent = '✕';
+        } else {
+          messageIcon.textContent = 'ℹ';
+        }
+      }
+      
+      // 设置类型和显示
+      configMessage.className = `message ${type} show`;
+      
+      // 自动隐藏（5秒后）
+      const timeoutId = setTimeout(() => {
+        configMessage.classList.remove('show');
+      }, 5000);
+      
+      // 关闭按钮功能
+      const closeBtn = configMessage.querySelector('.message-close');
+      if (closeBtn) {
+        // 移除之前的监听器（如果有）
+        const newCloseBtn = closeBtn.cloneNode(true);
+        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+        
+        newCloseBtn.addEventListener('click', () => {
+          clearTimeout(timeoutId);
+          configMessage.classList.remove('show');
+        });
+      }
+    }
+
+    // 日志管理
+    const logsContainer = document.getElementById('logsContainer');
+    const logsStats = document.getElementById('logsStats');
+
+    // Emoji 映射（与 logger.js 保持一致）
+    function getContextEmoji(message, level) {
+      const msg = message.toLowerCase();
+      
+      if (msg.includes('dns') || msg.includes('解析') || msg.includes('记录')) {
+        if (msg.includes('创建') || msg.includes('成功')) return '🌐';
+        if (msg.includes('查询')) return '🔍';
+        if (msg.includes('失败') || msg.includes('错误')) return '💥';
+        return '🔗';
+      }
+      
+      if (msg.includes('服务器') || msg.includes('server')) {
+        if (msg.includes('启动') || msg.includes('运行')) return '🚀';
+        if (msg.includes('停止')) return '🛑';
+        return '🖥️';
+      }
+      
+      if (msg.includes('定时任务') || msg.includes('scheduler') || msg.includes('cron')) {
+        if (msg.includes('启动')) return '⏰';
+        if (msg.includes('执行') || msg.includes('完成')) return '⏱️';
+        if (msg.includes('停止')) return '⏸️';
+        return '📅';
+      }
+      
+      if (msg.includes('配置') || msg.includes('config')) {
+        if (msg.includes('读取')) return '📖';
+        if (msg.includes('保存') || msg.includes('更新')) return '💾';
+        if (msg.includes('失败')) return '📛';
+        return '⚙️';
+      }
+      
+      if (msg.includes('客户端') || msg.includes('初始化') || msg.includes('client')) {
+        if (msg.includes('成功')) return '✨';
+        if (msg.includes('失败')) return '💔';
+        return '🔧';
+      }
+      
+      if (msg.includes('阿里云') || msg.includes('ali')) return '☁️';
+      if (msg.includes('腾讯云') || msg.includes('tencent')) return '🌩️';
+      if (msg.includes('esa')) return '🎯';
+      if (msg.includes('域名') || msg.includes('domain')) return '🌍';
+      if (msg.includes('规则') || msg.includes('rule')) return '📋';
+      if (msg.includes('时间') || msg.includes('time') || msg.includes('下一次')) return '🕐';
+      
+      if (msg.includes('统计') || msg.includes('完成') || msg.includes('成功') || msg.includes('失败')) {
+        if (msg.includes('成功')) return '🎉';
+        if (msg.includes('失败')) return '😞';
+        return '📊';
+      }
+      
+      const levelEmojis = {
+        'INFO': '📝',
+        'SUCCESS': '✅',
+        'WARN': '⚠️',
+        'ERROR': '❌',
+        'DEBUG': '🐛'
+      };
+      
+      return levelEmojis[level] || '';
+    }
+
+    // 加载日志
+    async function loadLogs() {
+      try {
+        const level = document.getElementById('logLevelFilter').value;
+        const limit = document.getElementById('logLimitFilter').value;
+        
+        let url = `${API_BASE}/api/logs?`;
+        if (level) url += `level=${level}&`;
+        if (limit) url += `limit=${limit}&`;
+        
+        const response = await fetch(url);
+        const result = await response.json();
+        
+        if (result.success) {
+          displayLogs(result.data || []);
+          displayStats(result.stats || {});
+        } else {
+          logsContainer.innerHTML = `<div class="empty-logs">加载日志失败: ${result.message || '未知错误'}</div>`;
+        }
+      } catch (error) {
+        logsContainer.innerHTML = `<div class="empty-logs">加载日志失败: ${error.message}</div>`;
+      }
+    }
+
+    // 显示日志
+    function displayLogs(logs) {
+      if (logs.length === 0) {
+        logsContainer.innerHTML = '<div class="empty-logs">暂无日志</div>';
+        return;
+      }
+
+      const logsHTML = logs.map(log => {
+        const emoji = getContextEmoji(log.message, log.level);
+        const dataHTML = log.data ? `<div class="log-data">${JSON.stringify(log.data, null, 2)}</div>` : '';
+        
+        return `
+          <div class="log-entry">
+            <span class="log-time">[${log.time}]</span>
+            <span class="log-level ${log.level}">${log.level}</span>
+            <span class="log-message">${emoji} ${log.message}</span>
+            ${dataHTML}
+          </div>
+        `;
+      }).join('');
+
+      logsContainer.innerHTML = logsHTML;
+      // 滚动到底部（最新日志）
+      logsContainer.scrollTop = 0;
+    }
+
+    // 显示统计
+    function displayStats(stats) {
+      const statsHTML = `
+        <div class="stat-item">
+          <div class="stat-label">总日志数</div>
+          <div class="stat-value">${stats.total || 0}</div>
+        </div>
+        ${Object.entries(stats.byLevel || {}).map(([level, count]) => `
+          <div class="stat-item">
+            <div class="stat-label">${level}</div>
+            <div class="stat-value">${count}</div>
+          </div>
+        `).join('')}
+      `;
+      logsStats.innerHTML = statsHTML;
+    }
+
+    // 日志操作
+    document.getElementById('refreshLogsBtn').addEventListener('click', loadLogs);
+    document.getElementById('logLevelFilter').addEventListener('change', loadLogs);
+    document.getElementById('logLimitFilter').addEventListener('change', loadLogs);
+    
+    document.getElementById('clearLogsBtn').addEventListener('click', async () => {
+      if (confirm('确定要清空所有日志吗？')) {
+        try {
+          const response = await fetch(`${API_BASE}/api/logs`, {
+            method: 'DELETE',
+          });
+          const result = await response.json();
+          
+          if (result.success) {
+            loadLogs();
+          } else {
+            alert('清空日志失败: ' + (result.message || '未知错误'));
+          }
+        } catch (error) {
+          alert('清空日志失败: ' + error.message);
+        }
+      }
+    });
+
+    // 初始化
+    initTheme();
+    initSwitches();
+    loadConfig();
+
+    // 自动刷新日志（如果当前在日志页）
+    setInterval(() => {
+      if (document.getElementById('logsTab').classList.contains('active')) {
+        loadLogs();
+      }
+    }, 5000);
+  </script>
+</body>
+</html>
+
