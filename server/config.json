@@ -8,7 +8,7 @@
   "esa_domain": "",
   "esa_site_id": "",
   "esa_target_value": "",
-  "esa_dns_analysis": true,
+  "esa_dns_analysis": false,
   "esa_dns_provider": "ali",
   "esa_host_policy": "follow_hostname",
   "esa_target_value_function": "",
