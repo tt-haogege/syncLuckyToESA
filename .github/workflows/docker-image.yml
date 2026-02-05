@@ -1,0 +1,68 @@
+name: Manual Build and Push
+
+on:
+  # 手动触发
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '镜像版本号 (例如: v1.0.0 或 latest)'
+        required: true
+        default: 'latest'
+
+env:
+  REGISTRY: ghcr.io
+  # --- 修改点：在这里将镜像名称写死 ---
+  IMAGE_NAME: tthaogege/sync-lucky-to-esa
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    # 必须赋予写入包的权限
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 1. 配置 QEMU (用于支持 ARM)
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # 2. 配置 Buildx (高级构建工具)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 3. 登录 GitHub Container Registry
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 4. 生成标签 (Tags)
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # 组合完整的镜像地址: ghcr.io/tt-haogege/sync-lucky-to-esa
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # 使用手动输入的 version
+            type=raw,value=${{ inputs.version }}
+            # 同时也打一个 sha tag (例如: sha-8f2a1c)，方便回滚
+            type=sha
+
+      # 5. 构建并推送 (多架构)
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # 同时构建 x86 和 ARM 镜像
+          platforms: linux/amd64,linux/arm64
