@@ -1,8 +1,12 @@
 # 基于 Node.js 镜像
 FROM node:18-alpine
 
-# 安装 nginx
-RUN apk add --no-cache nginx
+# 安装 nginx 和时区数据
+RUN apk add --no-cache nginx tzdata
+
+# 设置时区为东八区（北京时间）
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # 设置工作目录
 WORKDIR /app

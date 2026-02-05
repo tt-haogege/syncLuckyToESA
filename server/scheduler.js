@@ -123,7 +123,9 @@ async function executeTask() {
             // }
             if (!oldItem) {
               logger.info(`新增规则：${item.Domains}`);
-              newRules.push(item);
+              if (item.Remark.indexOf('_no_esa') === -1) {
+                newRules.push(item);
+              }
             }
           });
         }
