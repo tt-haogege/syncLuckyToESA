@@ -12,7 +12,7 @@ on:
 env:
   REGISTRY: ghcr.io
   # --- 修改点：在这里将镜像名称写死 ---
-  IMAGE_NAME: tthaogege/sync-lucky-to-esa
+  IMAGE_NAME: tt-haogege/sync-lucky-to-esa
 
 jobs:
   build-and-push:
@@ -48,7 +48,6 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          # 组合完整的镜像地址: ghcr.io/tt-haogege/sync-lucky-to-esa
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             # 使用手动输入的 version
