@@ -662,6 +662,19 @@
     .logs-container::-webkit-scrollbar-thumb:hover {
       background: var(--text-tertiary);
     }
+
+    /* 参数说明区域样式 */
+    #paramsExplanation code {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 11px;
+    }
+
+    #paramsExplanation h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0 0 12px 0;
+      color: var(--text-primary);
+    }
   </style>
 </head>
 <body>
@@ -742,7 +755,8 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">ESA回源域名</label>
-            <input type="text" class="form-input" name="esa_target_value" placeholder="目标值">
+            <input type="text" class="form-input" name="esa_target_value" placeholder="ESA回源域名">
+            <div class="form-help">不填写且自定义函数为空时，回源域名默认在主机域名后添加"a"，例如：test.abc.com → testa.abc.com</div>
           </div>
 
           <div class="form-group">
@@ -819,9 +833,58 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">ESA回源域名自定义函数</label>
-          <textarea class="form-textarea code-editor" name="esa_target_value_function" placeholder="function getTargetValue (rule, getDomainRecordValue) {&#10;    const targetValue = getDomainRecordValue(rule.Domains[0])+'a.nasqdz.top';&#10;    return targetValue;&#10;}"></textarea>
-          <div class="form-help">JavaScript 函数代码，用于计算目标值</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label class="form-label">ESA回源域名自定义函数</label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button type="button" class="btn btn-secondary" id="fillExampleBtn" style="padding: 6px 12px; font-size: 12px;">📝 填入示例</button>
+              <button type="button" class="btn btn-secondary" id="toggleParamsBtn" style="padding: 6px 12px; font-size: 12px;">📖 参数说明</button>
+            </div>
+          </div>
+          
+          <!-- 参数说明区域 -->
+          <div id="paramsExplanation" style="display: none; margin-bottom: 12px; padding: 16px; background: var(--bg-secondary); border-radius: 8px; border-left: 3px solid var(--accent);">
+            <div style="margin-bottom: 16px;">
+              <h4 style="margin: 0 0 12px 0; color: var(--text-primary); font-size: 14px; font-weight: 600;">函数参数说明</h4>
+              
+              <div style="margin-bottom: 12px;">
+                <div style="color: var(--accent); font-weight: 600; margin-bottom: 6px; font-size: 13px;">📦 rule 参数（对象）</div>
+                <div style="color: var(--text-secondary); font-size: 12px; line-height: 1.6; padding-left: 12px;">
+                  <div style="margin-bottom: 4px;"><strong>rule.Domains</strong>：域名数组</div>
+                  <div style="margin-bottom: 4px; padding-left: 8px; color: var(--text-tertiary);">
+                    示例：<code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">['test.abc.com:8080']</code>
+                  </div>
+                  <div style="margin-bottom: 4px;"><strong>rule.Key</strong> 或 <strong>rule.key</strong>：规则的唯一标识</div>
+                </div>
+              </div>
+              
+              <div>
+                <div style="color: var(--accent); font-weight: 600; margin-bottom: 6px; font-size: 13px;">🔧 getDomainRecordValue 函数</div>
+                <div style="color: var(--text-secondary); font-size: 12px; line-height: 1.6; padding-left: 12px;">
+                  <div style="margin-bottom: 4px;"><strong>功能</strong>：根据域名提取DNS记录值（主机记录）</div>
+                  <div style="margin-bottom: 4px;"><strong>参数</strong>：<code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">domain (string)</code> - 域名字符串，支持带端口</div>
+                  <div style="margin-bottom: 4px;"><strong>返回</strong>：<code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">string</code> - DNS记录值</div>
+                  <div style="margin-top: 8px; padding: 8px; background: var(--bg-tertiary); border-radius: 4px; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; font-size: 11px;">
+                    <div style="margin-bottom: 4px;"><strong>示例：</strong></div>
+                    <div>getDomainRecordValue('test.abc.com:8080') → 'test'</div>
+                    <div>getDomainRecordValue('aaa.bbb.abc.com') → 'aaa.bbb'</div>
+                    <div>getDomainRecordValue('abc.com') → '@'</div>
+                    <div style="margin-top: 6px; color: var(--text-tertiary); font-size: 10px;">
+                      💡 规则：提取根域名（最后两段）之前的部分，无则返回 '@'
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div style="padding-top: 12px; border-top: 1px solid var(--border-color);">
+              <div style="color: var(--text-secondary); font-size: 12px; line-height: 1.6;">
+                <strong>函数返回值：</strong>必须返回一个字符串，作为ESA回源域名的目标值（CNAME记录值）
+              </div>
+            </div>
+          </div>
+          
+          <textarea class="form-textarea code-editor" name="esa_target_value_function" id="esa_target_value_function" placeholder="function getTargetValue (rule, getDomainRecordValue) {&#10;    const targetValue = getDomainRecordValue(rule.Domains[0])+'a.nasqdz.top';&#10;    return targetValue;&#10;}"></textarea>
+          <div class="form-help">JavaScript 函数代码，用于获取回源host。如填写函数则会优先使用函数。</div>
         </div>
 
         <div class="form-actions">
@@ -1370,6 +1433,38 @@
         }
       }
     });
+
+    // ESA回源域名自定义函数相关功能
+    const fillExampleBtn = document.getElementById('fillExampleBtn');
+    const toggleParamsBtn = document.getElementById('toggleParamsBtn');
+    const paramsExplanation = document.getElementById('paramsExplanation');
+    const esaTargetValueFunctionTextarea = document.getElementById('esa_target_value_function');
+
+    // 填入示例代码
+    if (fillExampleBtn && esaTargetValueFunctionTextarea) {
+      fillExampleBtn.addEventListener('click', () => {
+        const placeholder = esaTargetValueFunctionTextarea.getAttribute('placeholder');
+        // 解码HTML实体
+        const exampleCode = placeholder
+          .replace(/&#10;/g, '\n')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"');
+        
+        esaTargetValueFunctionTextarea.value = exampleCode;
+        showMessage('示例代码已填入', 'success');
+      });
+    }
+
+    // 切换参数说明显示
+    if (toggleParamsBtn && paramsExplanation) {
+      toggleParamsBtn.addEventListener('click', () => {
+        const isVisible = paramsExplanation.style.display !== 'none';
+        paramsExplanation.style.display = isVisible ? 'none' : 'block';
+        toggleParamsBtn.textContent = isVisible ? '📖 参数说明' : '📕 收起说明';
+      });
+    }
 
     // 初始化
     initTheme();
